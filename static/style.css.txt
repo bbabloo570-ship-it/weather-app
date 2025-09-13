@@ -1,0 +1,97 @@
+/* Custom styles for weather app */
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    min-height: 100vh;
+}
+
+.card {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card-body {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+.weather-icon {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 15px;
+}
+
+.btn-primary {
+    background-color: #0984e3;
+    border-color: #0984e3;
+}
+
+.btn-primary:hover {
+    background-color: #076bc5;
+    border-color: #076bc5;
+}
+
+#loading {
+    margin: 2rem 0;
+}
+
+#errorMessage {
+    margin-top: 1rem;
+}
+
+#forecastContainer {
+    margin-top: 1rem;
+}
+
+.forecast-item {
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.forecast-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.forecast-date {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.forecast-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0.5rem auto;
+}
+
+.forecast-temp {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0.5rem 0;
+}
+
+.forecast-desc {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .weather-icon {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .forecast-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .forecast-temp {
+        font-size: 1.1rem;
+    }
+}

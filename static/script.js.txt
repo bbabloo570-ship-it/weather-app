@@ -1,0 +1,116 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const cityInput = document.getElementById('cityInput');
+    const searchBtn = document.getElementById('searchBtn');
+    const loading = document.getElementById('loading');
+    const errorMessage = document.getElementById('errorMessage');
+    const weatherCard = document.getElementById('weatherCard');
+    const currentCity = document.getElementById('currentCity');
+    const currentIcon = document.getElementById('currentIcon');
+    const currentDescription = document.getElementById('currentDescription');
+    const currentTemp = document.getElementById('currentTemp');
+    const feelsLike = document.getElementById('feelsLike');
+    const humidity = document.getElementById('humidity');
+    const windSpeed = document.getElementById('windSpeed');
+    const visibility = document.getElementById('visibility');
+    const sunrise = document.getElementById('sunrise');
+    const sunset = document.getElementById('sunset');
+    const forecastContainer = document.getElementById('forecastContainer');
+    
+    // Function to display weather data
+    function displayWeather(data) {
+        // Update current weather
+        currentCity.textContent = `${data.current.city}, ${data.current.country}`;
+        currentIcon.src = `https://openweathermap.org/img/wn/${data.current.icon}@2x.png`;
+        currentDescription.textContent = data.current.description;
+        currentTemp.textContent = data.current.temperature;
+        feelsLike.textContent = `${data.current.feels_like}°C`;
+        humidity.textContent = `${data.current.humidity}%`;
+        windSpeed.textContent = `${data.current.wind_speed} m/s`;
+        visibility.textContent = `${data.current.visibility.toFixed(1)} km`;
+        sunrise.textContent = data.current.sunrise_time;
+        sunset.textContent = data.current.sunset_time;
+        
+        // Clear existing forecast items
+        forecastContainer.innerHTML = '';
+        
+        // Add forecast items
+        data.forecast.forEach(day => {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'col-12 col-md-6 forecast-item';
+            
+            // Format date (remove year and just show month/day)
+            const dateObj = new Date(day.date);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            dayElement.innerHTML = `
+                <div class="forecast-date">${formattedDate}</div>
+                <img src="https://openweathermap.org/img/wn/${day.icon}@2x.png" alt="${day.description}" class="forecast-icon">
+                <div class="forecast-temp">
+                    ${Math.round(day.high)}°C / ${Math.round(day.low)}°C
+                </div>
+                <div class="forecast-desc">${day.description}</div>
+            `;
+            
+            forecastContainer.appendChild(dayElement);
+        });
+        
+        // Show weather card
+        weatherCard.classList.remove('d-none');
+        loading.classList.add('d-none');
+        errorMessage.classList.add('d-none');
+    }
+    
+    // Function to handle search
+    async function searchWeather() {
+        const city = cityInput.value.trim();
+        
+        if (!city) {
+            showError('Please enter a city name');
+            return;
+        }
+        
+        // Show loading state
+        loading.classList.remove('d-none');
+        weatherCard.classList.add('d-none');
+        errorMessage.classList.add('d-none');
+        
+        try {
+            const response = await fetch(`/forecast?city=${encodeURIComponent(city)}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to fetch weather data');
+            }
+            
+            const data = await response.json();
+            displayWeather(data);
+            
+        } catch (error) {
+            showError(error.message);
+        }
+    }
+    
+    // Function to show error message
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.classList.remove('d-none');
+        loading.classList.add('d-none');
+        weatherCard.classList.add('d-none');
+    }
+    
+    // Event listeners
+    searchBtn.addEventListener('click', searchWeather);
+    
+    cityInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchWeather();
+        }
+    });
+    
+    // Initialize with empty search
+    cityInput.focus();
+});

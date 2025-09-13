@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Weather App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin-top: 60px;
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .search-box {
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 30px;
+            width: 80%;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            outline: none;
+        }
+
+        .weather-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .temp {
+            font-size: 5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .city {
+            font-size: 2em;
+            margin: 10px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .desc {
+            font-size: 1.5em;
+            margin: 10px 0;
+            opacity: 0.9;
+        }
+
+        .humidity {
+            font-size: 1.2em;
+            margin: 10px 0;
+            opacity: 0.8;
+        }
+
+        .error {
+            color: #ff6b6b;
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+
+        .loading {
+            font-size: 1.5em;
+            font-style: italic;
+            margin: 20px 0;
+            color: #fff;
+        }
+
+        .icon {
+            font-size: 4em;
+            margin: 10px 0;
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .temp { font-size: 4em; }
+            .city { font-size: 1.8em; }
+            .desc { font-size: 1.3em; }
+            .search-box { width: 90%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌤️ My Weather App</h1>
+        <input type="text" class="search-box" id="cityInput" placeholder="Type a city name..." autocomplete="off">
+
+        <div class="spinner" id="spinner"></div>
+
+        <div class="weather-card" id="weatherCard" style="display: none;">
+            <div class="icon" id="weatherIcon">☀️</div>
+            <div class="city" id="cityName">Delhi</div>
+            <div class="temp" id="temperature">30.05°C</div>
+            <div class="desc" id="description">Haze</div>
+            <div class="humidity" id="humidity">Humidity: 60%</div>
+        </div>
+
+        <p class="error" id="error" style="display: none;"></p>
+    </div>
+
+    <script>
+        const cityInput = document.getElementById('cityInput');
+        const weatherCard = document.getElementById('weatherCard');
+        const cityName = document.getElementById('cityName');
+        const temperature = document.getElementById('temperature');
+        const description = document.getElementById('description');
+        const humidity = document.getElementById('humidity');
+        const weatherIcon = document.getElementById('weatherIcon');
+        const errorDiv = document.getElementById('error');
+        const spinner = document.getElementById('spinner');
+
+        // Function to fetch weather data
+        async function fetchWeather(city) {
+            if (!city.trim()) return;
+
+            // Show spinner, hide previous results
+            spinner.style.display = 'block';
+            weatherCard.style.display = 'none';
+            errorDiv.style.display = 'none';
+
+            try {
+                const response = await fetch(`/weather?city=${encodeURIComponent(city)}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    cityName.textContent = data.city;
+                    temperature.textContent = `${data.temp}°C`;
+                    description.textContent = data.desc;
+                    humidity.textContent = `Humidity: ${data.humidity}%`;
+
+                    // Map weather icon based on description
+                    const iconMap = {
+                        'Clear': '☀️',
+                        'Clouds': '☁️',
+                        'Rain': '🌧️',
+                        'Drizzle': '🌦️',
+                        'Thunderstorm': '⛈️',
+                        'Snow': '❄️',
+                        'Mist': '🌫️',
+                        'Smoke': '🌫️',
+                        'Haze': '🌫️',
+                        'Dust': '🌪️',
+                        'Fog': '🌫️',
+                        'Sand': '🏜️',
+                        'Ash': '🌋',
+                        'Squall': '💨',
+                        'Tornado': '🌀'
+                    };
+                    const icon = iconMap[data.desc.split(' ')[0]] || '🌤️';
+                    weatherIcon.textContent = icon;
+
+                    weatherCard.style.display = 'block';
+                } else {
+                    throw new Error(data.error || 'City not found');
+                }
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+
+        // Event listener for search input
+        cityInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                fetchWeather(cityInput.value);
+            }
+        });
+
+        // Load default weather on page load
+        window.onload = () => {
+            fetchWeather('Delhi');
+        };
+    </script>
+</body>
+</html>
